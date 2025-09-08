@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Snapshot | Advanced BMI Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary-light: #3b82f6;
+            --secondary-light: #10b981;
+            --accent-light: #f59e0b;
+            --danger-light: #ef4444;
+            --bg-light: #f8fafc;
+            --card-light: #ffffff;
+            --text-light: #1e293b;
+            --border-light: #e2e8f0;
+
+            --primary-dark: #60a5fa;
+            --secondary-dark: #34d399;
+            --accent-dark: #fbbf24;
+            --danger-dark: #f87171;
+            --bg-dark: #0f172a;
+            --card-dark: #1e293b;
+            --text-dark: #f1f5f9;
+            --border-dark: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            transition: all 0.3s ease;
+        }
+
+        body.light-mode {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: var(--text-light);
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #0c4a6e 0%, #1e3a8a 100%);
+            color: var(--text-dark);
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .light-mode .card {
+            background: var(--card-light);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            color: #1e293b;
+        }
+
+        .dark-mode .card {
+            background: var(--card-dark);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            color: #f1f5f9;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .light-mode .card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .dark-mode .card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-transition {
+            transition: width 1.5s ease-in-out, background-color 1s ease;
+        }
+
+        .floating-label {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .light-mode .floating-input {
+            border-bottom: 2px solid #cbd5e0;
+            color: var(--text-light);
+        }
+
+        .dark-mode .floating-input {
+            border-bottom: 2px solid #475569;
+            color: var(--text-dark);
+        }
+
+        .floating-input {
+            border: 0;
+            outline: none;
+            transition: border 0.3s ease;
+            background: transparent;
+            width: 100%;
+            padding: 0.5rem 0;
+        }
+
+        .light-mode .floating-input:focus {
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        .dark-mode .floating-input:focus {
+            border-bottom: 2px solid var(--primary-dark);
+        }
+
+        .light-mode .input-icon {
+            color: #9ca3af;
+        }
+
+        .dark-mode .input-icon {
+            color: #94a3b8;
+        }
+
+        .bmi-scale {
+            background: linear-gradient(90deg, var(--primary-light) 0%, var(--secondary-light) 30%, var(--accent-light) 60%, var(--danger-light) 100%);
+            height: 24px;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .dark-mode .bmi-scale {
+            background: linear-gradient(90deg, var(--primary-dark) 0%, var(--secondary-dark) 30%, var(--accent-dark) 60%, var(--danger-dark) 100%);
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #1e293b;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #fbbf24;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(26px);
+        }
+
+        .light-mode .main-container {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .dark-mode .main-container {
+            background: rgba(30, 41, 59, 0.9);
+        }
+
+        .macro-bar {
+            height: 12px;
+            border-radius: 6px;
+            margin: 5px 0;
+        }
+
+        @media print {
+
+            body,
+            html {
+                background: white !important;
+                color: black !important;
+                height: auto;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .main-container {
+                box-shadow: none !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                border-radius: 0 !important;
+            }
+
+            .card {
+                break-inside: avoid;
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+                margin-bottom: 1rem;
+                page-break-inside: avoid;
+            }
+
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 1.5rem;
+                padding-bottom: 1rem;
+                border-bottom: 2px solid #333;
+            }
+
+            .print-watermark {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                opacity: 0.1;
+                font-size: 72px;
+                transform: rotate(-45deg);
+            }
+
+            .print-footer {
+                display: block !important;
+                text-align: center;
+                margin-top: 2rem;
+                padding-top: 1rem;
+                border-top: 1px solid #ccc;
+                font-size: 0.8rem;
+            }
+
+            .dark-mode .card,
+            .light-mode .card {
+                background: white !important;
+                color: black !important;
+            }
+
+            .bmi-scale {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+
+            @page {
+                margin: 1cm;
+            }
+        }
+
+        .light-mode select {
+            background-color: var(--card-light);
+            color: var(--text-light);
+        }
+
+        .dark-mode select {
+            background-color: var(--card-dark);
+            color: var(--text-dark);
+        }
+
+        select {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            border: 1px solid;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .light-mode select {
+            border-color: var(--border-light);
+        }
+
+        .dark-mode select {
+            border-color: var(--border-dark);
+        }
+
+        /* Progress Tracking Styles */
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .progress-dot.underweight {
+            background-color: #3b82f6;
+        }
+
+        .progress-dot.healthy {
+            background-color: #10b981;
+        }
+
+        .progress-dot.overweight {
+            background-color: #f59e0b;
+        }
+
+        .progress-dot.obesity {
+            background-color: #ef4444;
+        }
+
+        .food-item {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .food-item:hover {
+            background-color: #f3f4f6;
+            transform: translateX(5px);
+        }
+
+        .dark-mode .food-item:hover {
+            background-color: #374151;
+        }
+
+        .meal-card {
+            border-left: 4px solid;
+            transition: all 0.2s ease;
+        }
+
+        .meal-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .meal-plan-day {
+            transition: all 0.2s ease;
+        }
+
+        .meal-plan-day:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Floating label fix */
+        .floating-label-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .floating-label {
+            position: absolute;
+            pointer-events: none;
+            left: 25px;
+            top: 10px;
+            transition: 0.2s ease all;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        .floating-input:focus~.floating-label,
+        .floating-input:not(:placeholder-shown)~.floating-label {
+            top: -18px;
+            left: 5px;
+            font-size: 12px;
+            color: #3b82f6;
+        }
+
+        .dark-mode .floating-input:focus~.floating-label,
+        .dark-mode .floating-input:not(:placeholder-shown)~.floating-label {
+            color: #60a5fa;
+        }
+
+        .input-with-icon {
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid #cbd5e0;
+            padding-bottom: 8px;
+        }
+
+        .dark-mode .input-with-icon {
+            border-bottom: 2px solid #475569;
+        }
+
+        /* Fix for text colors in light mode */
+        .light-mode {
+            color: #1e293b;
+        }
+
+        .light-mode .text-muted {
+            color: #64748b;
+        }
+
+        /* Print header and footer */
+        .print-header,
+        .print-footer {
+            display: none;
+        }
+
+        .print-watermark {
+            display: none;
+        }
+
+
+        /* Print-specific styles */
+        @media print {
+
+            body,
+            html {
+                background: white !important;
+                color: black !important;
+                font-size: 12pt;
+                height: auto;
+                width: 100%;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .print-container {
+                display: block !important;
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                padding: 0.5in;
+                box-shadow: none !important;
+            }
+
+            .print-header {
+                text-align: center;
+                margin-bottom: 1.5rem;
+                padding-bottom: 1rem;
+                border-bottom: 2px solid #3b82f6;
+            }
+
+            .print-header h1 {
+                color: #3b82f6;
+                font-size: 24pt;
+                margin-bottom: 0.5rem;
+            }
+
+            .print-header p {
+                color: #64748b;
+                font-size: 12pt;
+            }
+
+            .print-section {
+                break-inside: avoid;
+                margin-bottom: 1.5rem;
+                padding: 1rem;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                background: white;
+            }
+
+            .print-section h2 {
+                color: #3b82f6;
+                font-size: 16pt;
+                margin-bottom: 1rem;
+                padding-bottom: 0.5rem;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            .print-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .print-value {
+                font-size: 18pt;
+                font-weight: bold;
+                color: #1e293b;
+            }
+
+            .print-label {
+                font-size: 10pt;
+                color: #64748b;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .bmi-scale-print {
+                height: 20px;
+                background: linear-gradient(90deg, #3b82f6 0%, #10b981 30%, #f59e0b 60%, #ef4444 100%);
+                border-radius: 10px;
+                margin: 1rem 0;
+                position: relative;
+            }
+
+            .bmi-markers {
+                display: flex;
+                justify-content: space-between;
+                font-size: 9pt;
+                color: #64748b;
+                margin-top: 0.5rem;
+            }
+
+            .recommendations {
+                background: #f1f5f9;
+                padding: 1rem;
+                border-radius: 8px;
+                margin-top: 1rem;
+            }
+
+            .recommendations ul {
+                padding-left: 1.5rem;
+                margin: 0.5rem 0;
+            }
+
+            .recommendations li {
+                margin-bottom: 0.5rem;
+                font-size: 11pt;
+            }
+
+            .macro-bars {
+                display: flex;
+                height: 20px;
+                border-radius: 10px;
+                overflow: hidden;
+                margin: 0.5rem 0;
+            }
+
+            .macro-protein {
+                background: #3b82f6;
+            }
+
+            .macro-carbs {
+                background: #10b981;
+            }
+
+            .macro-fat {
+                background: #f59e0b;
+            }
+
+            .print-footer {
+                text-align: center;
+                margin-top: 2rem;
+                padding-top: 1rem;
+                border-top: 1px solid #e2e8f0;
+                font-size: 10pt;
+                color: #64748b;
+            }
+
+            @page {
+                margin: 0.5in;
+            }
+        }
+    </style>
+</head>
+
+<body class="light-mode flex items-center justify-center p-4 min-h-screen">
+    <!-- Print Header -->
+    <div class="print-header no-print">
+        <h1 class="text-2xl font-bold">Health Snapshot Report</h1>
+        <p class="text-sm">Generated on <span id="print-date"></span></p>
+    </div>
+
+    <!-- Print Watermark -->
+    <div class="print-watermark no-print">HEALTH SNAPSHOT</div>
+
+    <div class="main-container rounded-2xl shadow-2xl overflow-hidden w-full max-w-4xl no-print">
+        <div class="md:flex">
+            <!-- Theme Toggle -->
+            <div class="absolute top-4 right-4 flex items-center no-print">
+                <i class="fas fa-sun mode-icon mr-2 text-yellow-500"></i>
+                <label class="theme-switch">
+                    <input type="checkbox" id="theme-toggle">
+                    <span class="slider"></span>
+                </label>
+                <i class="fas fa-moon mode-icon ml-2 text-blue-300"></i>
+            </div>
+
+            <!-- Illustration Section -->
+            <div
+                class="md:w-2/5 bg-gradient-to-br from-blue-500 to-cyan-500 p-8 text-white flex flex-col justify-center items-center hidden md:block no-print">
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold mb-4">Your Health Dashboard</h2>
+                    <p class="mb-8">Get a comprehensive view of your health metrics in one place</p>
+                    <img src="https://www.news-medical.net/images/Article_Images/ImageForArticle_22595_16539923345862310.jpg"
+                        alt="Health Illustration" class="w-full max-w-xs mx-auto">
+                    <div class="mt-8 flex flex-wrap justify-center gap-2">
+                        <span class="bg-white bg-opacity-20 rounded-full px-3 py-1 text-sm">BMI Calculation</span>
+                        <span class="bg-white bg-opacity-20 rounded-full px-3 py-1 text-sm">Ideal Weight Range</span>
+                        <span class="bg-white bg-opacity-20 rounded-full px-3 py-1 text-sm">Calorie Needs</span>
+                        <span class="bg-white bg-opacity-20 rounded-full px-3 py-1 text-sm">Health Tips</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calculator Section -->
+            <div class="md:w-3/5 p-8">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Health Snapshot</h1>
+                    <p class="text-muted">Get a comprehensive view of your health metrics</p>
+                </div>
+
+                <!-- Input Form -->
+                <form id="calculator-form" class="space-y-6 form-container">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="floating-label-group">
+                            <div class="input-with-icon">
+                                <i class="fas fa-ruler-vertical input-icon mr-3 text-gray-500"></i>
+                                <input
+                                    class="floating-input appearance-none border-none w-full mr-3 py-1 px-2 leading-tight focus:outline-none"
+                                    type="number" id="height" placeholder=" " required>
+                                <label for="height" class="floating-label">Height (cm)</label>
+                                <span class="opacity-70">cm</span>
+                            </div>
+                        </div>
+
+                        <div class="floating-label-group">
+                            <div class="input-with-icon">
+                                <i class="fas fa-weight input-icon mr-3 text-gray-500"></i>
+                                <input
+                                    class="floating-input appearance-none border-none w-full mr-3 py-1 px-2 leading-tight focus:outline-none"
+                                    type="number" id="weight" placeholder=" " required>
+                                <label for="weight" class="floating-label">Weight (kg)</label>
+                                <span class="opacity-70">kg</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="floating-label-group">
+                            <div class="input-with-icon">
+                                <i class="fas fa-birthday-cake input-icon mr-3 text-gray-500"></i>
+                                <input
+                                    class="floating-input appearance-none border-none w-full mr-3 py-1 px-2 leading-tight focus:outline-none"
+                                    type="number" id="age" placeholder=" " required>
+                                <label for="age" class="floating-label">Age</label>
+                                <span class="opacity-70">years</span>
+                            </div>
+                        </div>
+
+                        <div class="floating-label-group">
+                            <div class="input-with-icon">
+                                <i class="fas fa-user input-icon mr-3 text-gray-500"></i>
+                                <select id="gender" required
+                                    class="floating-input appearance-none bg-transparent border-none w-full mr-3 py-1 px-2 leading-tight focus:outline-none">
+                                    <option value="" disabled selected></option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                                <label for="gender" class="floating-label">Gender</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="floating-label-group">
+                            <div class="input-with-icon">
+                                <i class="fas fa-running input-icon mr-3 text-gray-500"></i>
+                                <select id="activity" required
+                                    class="floating-input appearance-none bg-transparent border-none w-full mr-3 py-1 px-2 leading-tight focus:outline-none">
+                                    <option value="" disabled selected></option>
+                                    <option value="1.2">Sedentary (little or no exercise)</option>
+                                    <option value="1.375">Light (exercise 1-3 days/week)</option>
+                                    <option value="1.55">Moderate (exercise 3-5 days/week)</option>
+                                    <option value="1.725">Active (exercise 6-7 days/week)</option>
+                                    <option value="1.9">Very Active (hard exercise daily)</option>
+                                </select>
+                                <label for="activity" class="floating-label">Activity Level</label>
+                            </div>
+                        </div>
+
+                        <div class="floating-label-group">
+                            <div class="input-with-icon">
+                                <i class="fas fa-bullseye input-icon mr-3 text-gray-500"></i>
+                                <select id="goal" required
+                                    class="floating-input appearance-none bg-transparent border-none w-full mr-3 py-1 px-2 leading-tight focus:outline-none">
+                                    <option value="" disabled selected></option>
+                                    <option value="loss">Weight Loss</option>
+                                    <option value="maintain">Maintenance</option>
+                                    <option value="gain">Muscle Gain</option>
+                                </select>
+                                <label for="goal" class="floating-label">Goal</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center mt-8">
+                        <button type="submit"
+                            class="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 flex items-center pulse">
+                            <i class="fas fa-heartbeat mr-2"></i> Calculate My Snapshot
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Results Dashboard (Initially Hidden) -->
+                <div id="results" class="hidden mt-12 space-y-8 animate-fade-in">
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end space-x-4 no-print">
+                        <button id="print-btn"
+                            class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg flex items-center">
+                            <i class="fas fa-print mr-2"></i> Print Results
+                        </button>
+                        <button id="share-btn"
+                            class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg flex items-center">
+                            <i class="fas fa-share-alt mr-2"></i> Share
+                        </button>
+                    </div>
+
+                    <!-- BMI Result Card -->
+                    <div class="card rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+                        <h2 class="font-semibold text-xl mb-4 flex items-center">
+                            <i class="fas fa-calculator mr-2 text-blue-500"></i> Your BMI
+                        </h2>
+                        <div class="flex items-end justify-between">
+                            <div>
+                                <p class="text-4xl font-bold"><span id="bmi-value">0</span></p>
+                                <p class="text-sm font-normal mt-1" id="bmi-category"></p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs opacity-70 mb-1">Healthy range: 18.5 - 24.9</div>
+                                <div class="w-48 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                                    <div id="bmi-progress" class="h-2.5 rounded-full progress-transition"
+                                        style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Ideal Weight Card -->
+                        <div class="card rounded-xl shadow-md p-6 border-l-4 border-green-500">
+                            <h2 class="font-semibold text-lg mb-4 flex items-center">
+                                <i class="fas fa-balance-scale mr-2 text-green-500"></i> Healthy Weight Range
+                            </h2>
+                            <p class="text-2xl font-bold"><span id="ideal-weight-min">0</span>kg - <span
+                                    id="ideal-weight-max">0</span>kg</p>
+                        </div>
+
+                        <!-- Calorie Card -->
+                        <div class="card rounded-xl shadow-md p-6 border-l-4 border-purple-500">
+                            <h2 class="font-semibold text-lg mb-4 flex items-center">
+                                <i class="fas fa-fire mr-2 text-purple-500"></i> Daily Calorie Needs
+                            </h2>
+                            <p class="text-2xl font-bold"><span id="calorie-intake">0</span> kcal</p>
+                            <p class="text-sm opacity-70 mt-1">Maintenance calories</p>
+                        </div>
+                    </div>
+
+                    <!-- Water Intake Card -->
+                    <div class="card rounded-xl shadow-md p-6 border-l-4 border-indigo-500">
+                        <h2 class="font-semibold text-lg mb-4 flex items-center">
+                            <i class="fas fa-tint mr-2 text-indigo-500"></i> Recommended Water Intake
+                        </h2>
+                        <p class="text-2xl font-bold"><span id="water-intake">0</span> liters per day</p>
+                        <p class="text-sm opacity-70 mt-1">Based on your weight and activity level</p>
+                    </div>
+
+                    <!-- Macronutrients Card -->
+                    <div class="card rounded-xl shadow-md p-6 border-l-4 border-pink-500">
+                        <h2 class="font-semibold text-lg mb-4 flex items-center">
+                            <i class="fas fa-chart-pie mr-2 text-pink-500"></i> Macronutrient Distribution
+                        </h2>
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                            <div class="text-center">
+                                <p class="text-xl font-bold"><span id="protein-value">0</span>g</p>
+                                <p class="text-sm opacity-70">Protein</p>
+                                <div class="macro-bar bg-blue-500 mt-2" id="protein-bar" style="width: 30%;"></div>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-xl font-bold"><span id="carbs-value">0</span>g</p>
+                                <p class="text-sm opacity-70">Carbs</p>
+                                <div class="macro-bar bg-green-500 mt-2" id="carbs-bar" style="width: 50%;"></div>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-xl font-bold"><span id="fat-value">0</span>g</p>
+                                <p class="text-sm opacity-70">Fat</p>
+                                <div class="macro-bar bg-yellow-500 mt-2" id="fat-bar" style="width: 20%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Health Tips Card -->
+                    <div
+                        class="card bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 rounded-xl shadow-md p-6 border-l-4 border-cyan-500">
+                        <h2 class="font-semibold text-lg mb-4 flex items-center">
+                            <i class="fas fa-lightbulb mr-2 text-cyan-500"></i> Personalized Health Recommendations
+                        </h2>
+                        <div id="health-tips">
+                            <p>We'll provide customized recommendations based on your results.</p>
+                        </div>
+                    </div>
+
+                    <!-- BMI Scale -->
+                    <div class="card rounded-xl shadow-md p-6">
+                        <h2 class="font-semibold text-lg mb-4">BMI Scale</h2>
+                        <div class="bmi-scale h-6 rounded-full relative mb-2">
+                            <div class="flex justify-between text-xs text-white px-2 absolute inset-0">
+                                <span>Underweight</span>
+                                <span>Healthy</span>
+                                <span>Overweight</span>
+                                <span>Obesity</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-xs opacity-70">
+                            <span>&lt;18.5</span>
+                            <span>18.5-24.9</span>
+                            <span>25-29.9</span>
+                            <span>30+</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Print Footer -->
+    <div class="print-footer no-print">
+        <p>This report was generated by Health Snapshot Calculator. For informational purposes only. Consult a
+            healthcare professional for medical advice.</p>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+
+        // Check for saved theme preference or respect OS preference
+        if (localStorage.getItem('theme') === 'dark' ||
+            (window.matchMedia('(prefers-color-scheme: dark)').matches && !localStorage.getItem('theme'))) {
+            body.classList.add('dark-mode');
+            body.classList.remove('light-mode');
+            themeToggle.checked = true;
+        } else {
+            body.classList.add('light-mode');
+            body.classList.remove('dark-mode');
+            themeToggle.checked = false;
+        }
+
+        themeToggle.addEventListener('change', function () {
+            if (this.checked) {
+                body.classList.add('dark-mode');
+                body.classList.remove('light-mode');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.add('light-mode');
+                body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // Get Form and Result Elements
+        const form = document.getElementById('calculator-form');
+        const resultsSection = document.getElementById('results');
+        const bmiValueElement = document.getElementById('bmi-value');
+        const bmiCategoryElement = document.getElementById('bmi-category');
+        const idealWeightMinElement = document.getElementById('ideal-weight-min');
+        const idealWeightMaxElement = document.getElementById('ideal-weight-max');
+        const calorieIntakeElement = document.getElementById('calorie-intake');
+        const waterIntakeElement = document.getElementById('water-intake');
+        const healthTipsElement = document.getElementById('health-tips');
+        const progressBar = document.getElementById('bmi-progress');
+        const printBtn = document.getElementById('print-btn');
+        const proteinValue = document.getElementById('protein-value');
+        const carbsValue = document.getElementById('carbs-value');
+        const fatValue = document.getElementById('fat-value');
+        const proteinBar = document.getElementById('protein-bar');
+        const carbsBar = document.getElementById('carbs-bar');
+        const fatBar = document.getElementById('fat-bar');
+
+        // Set current date for print
+        document.getElementById('print-date').textContent = new Date().toLocaleDateString();
+
+        // Listen for form submission
+        form.addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent page reload
+
+            // 1. Get input values
+            const heightInput = document.getElementById('height');
+            const weightInput = document.getElementById('weight');
+            const ageInput = document.getElementById('age');
+            const genderSelect = document.getElementById('gender');
+            const activitySelect = document.getElementById('activity');
+            const goalSelect = document.getElementById('goal');
+
+            // Validate inputs
+            if (!heightInput.value || !weightInput.value || !ageInput.value ||
+                !genderSelect.value || !activitySelect.value || !goalSelect.value) {
+                alert("Please fill in all fields");
+                return;
+            }
+
+            const height = parseFloat(heightInput.value) / 100; // convert cm to m
+            const weight = parseFloat(weightInput.value);
+            const age = parseFloat(ageInput.value);
+            const gender = genderSelect.value;
+            const activityFactor = parseFloat(activitySelect.value);
+            const goal = goalSelect.value;
+
+            // 2. Calculate BMI
+            const bmi = weight / (height * height);
+
+            // 3. Display BMI and Category
+            bmiValueElement.textContent = bmi.toFixed(1);
+            const category = getBMICategory(bmi);
+            bmiCategoryElement.textContent = category;
+            bmiCategoryElement.className = 'text-sm font-normal mt-1 ' + getCategoryColor(category);
+
+            // 4. Calculate and Display Ideal Weight Range (Simple formula)
+            const idealWeightMin = 18.5 * (height * height);
+            const idealWeightMax = 24.9 * (height * height);
+            idealWeightMinElement.textContent = idealWeightMin.toFixed(1);
+            idealWeightMaxElement.textContent = idealWeightMax.toFixed(1);
+
+            // 5. Update the Visual Progress Bar
+            // Map BMI to a percentage for the bar (e.g., BMI 15=0%, 40=100%)
+            let progressPercentage = ((bmi - 15) / (40 - 15)) * 100;
+            progressPercentage = Math.max(0, Math.min(100, progressPercentage)); // Clamp between 0-100
+            progressBar.style.width = progressPercentage + '%';
+            // Change bar color based on category
+            progressBar.className = `h-2.5 rounded-full progress-transition ${getCategoryBGColor(category)}`;
+
+            // 6. Calculate and Display Calories (Harris-Benedict Equation)
+            let basalMetabolicRate;
+            if (gender === 'male') {
+                // For Men: BMR = 88.362 + (13.397 * weight) + (4.799 * height*100) - (5.677 * age)
+                basalMetabolicRate = 88.362 + (13.397 * weight) + (4.799 * (height * 100)) - (5.677 * age);
+            } else {
+                // For Women: BMR = 447.593 + (9.247 * weight) + (3.098 * height*100) - (4.330 * age)
+                basalMetabolicRate = 447.593 + (9.247 * weight) + (3.098 * (height * 100)) - (4.330 * age);
+            }
+
+            // Adjust calories based on goal
+            let calorieAdjustment = 0;
+            if (goal === 'loss') {
+                calorieAdjustment = -500; // Create deficit for weight loss
+            } else if (goal === 'gain') {
+                calorieAdjustment = 500; // Create surplus for muscle gain
+            }
+
+            const maintenanceCalories = basalMetabolicRate * activityFactor;
+            const goalCalories = maintenanceCalories + calorieAdjustment;
+
+            calorieIntakeElement.textContent = goalCalories.toFixed(0);
+
+            // 7. Calculate and display water intake recommendation
+            const waterIntake = (weight * 0.033 + activityFactor * 0.2).toFixed(1);
+            waterIntakeElement.textContent = waterIntake;
+
+            // 8. Calculate and display macronutrient distribution
+            let proteinPercentage, carbsPercentage, fatPercentage;
+
+            if (goal === 'loss') {
+                proteinPercentage = 40;
+                carbsPercentage = 30;
+                fatPercentage = 30;
+            } else if (goal === 'gain') {
+                proteinPercentage = 30;
+                carbsPercentage = 50;
+                fatPercentage = 20;
+            } else { // maintenance
+                proteinPercentage = 25;
+                carbsPercentage = 45;
+                fatPercentage = 30;
+            }
+
+            // Calculate grams for each macronutrient
+            const proteinGrams = Math.round((goalCalories * proteinPercentage / 100) / 4);
+            const carbsGrams = Math.round((goalCalories * carbsPercentage / 100) / 4);
+            const fatGrams = Math.round((goalCalories * fatPercentage / 100) / 9);
+
+            proteinValue.textContent = proteinGrams;
+            carbsValue.textContent = carbsGrams;
+            fatValue.textContent = fatGrams;
+
+            proteinBar.style.width = proteinPercentage + '%';
+            carbsBar.style.width = carbsPercentage + '%';
+            fatBar.style.width = fatPercentage + '%';
+
+            // 9. Display Health Recommendations
+            const tips = {
+                'Underweight': [
+                    "Focus on nutrient-dense foods like nuts, avocados, and whole-fat dairy.",
+                    "Consider eating more frequent, smaller meals throughout the day.",
+                    "Strength training can help you build muscle mass healthily.",
+                    "Aim for a calorie surplus of 300-500 calories per day to gain weight gradually.",
+                    "Include protein-rich foods in each meal to support muscle growth."
+                ],
+                'Healthy Weight': [
+                    "Maintain your healthy habits! Consistency is key.",
+                    "Focus on a balanced diet.",
+                    "Focus on a balanced diet rich in fruits, vegetables, and whole grains.",
+                    "Remember to stay hydrated and get enough sleep alongside your exercise.",
+                    "Continue with regular physical activity - aim for at least 150 minutes per week.",
+                    "Consider varying your workout routine to prevent plateaus and maintain motivation."
+                ],
+                'Overweight': [
+                    "Start with small, sustainable changes to your diet, like reducing sugary drinks.",
+                    "Aim for at least 150 minutes of moderate aerobic activity per week.",
+                    "Focus on incorporating more whole foods and lean proteins into your meals.",
+                    "Consider intermittent fasting or time-restricted eating after consulting with a healthcare provider.",
+                    "Keep a food diary to increase awareness of eating patterns and identify areas for improvement."
+                ],
+                'Obesity': [
+                    "Consulting with a doctor or dietitian can help create a personalized plan for you.",
+                    "Even a 5-10% reduction in body weight can significantly improve health outcomes.",
+                    "Find physical activities you enjoy, like walking or swimming, to stay consistent.",
+                    "Consider behavioral therapy approaches to address emotional eating patterns.",
+                    "Focus on building sustainable habits rather than quick fixes for long-term success."
+                ]
+            };
+
+            const categoryTips = tips[category];
+            let tipsHTML = '<ul class="list-disc pl-5 space-y-2">';
+
+            // Select 3-4 random tips
+            const selectedTips = getRandomTips(categoryTips, 4);
+            selectedTips.forEach(tip => {
+                tipsHTML += `<li>${tip}</li>`;
+            });
+
+            tipsHTML += '</ul>';
+            healthTipsElement.innerHTML = tipsHTML;
+
+            // 10. Show the hidden results section
+            resultsSection.classList.remove('hidden');
+
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        });
+
+
+        printBtn.addEventListener('click', function () {
+            // Get all the values from the results section
+            const height = document.getElementById('height').value;
+            const weight = document.getElementById('weight').value;
+            const age = document.getElementById('age').value;
+            const gender = document.getElementById('gender').options[document.getElementById('gender').selectedIndex].text;
+            const bmi = document.getElementById('bmi-value').textContent;
+            const bmiCategory = document.getElementById('bmi-category').textContent;
+            const idealWeightMin = document.getElementById('ideal-weight-min').textContent;
+            const idealWeightMax = document.getElementById('ideal-weight-max').textContent;
+            const calories = document.getElementById('calorie-intake').textContent;
+            const water = document.getElementById('water-intake').textContent;
+            const protein = document.getElementById('protein-value').textContent;
+            const carbs = document.getElementById('carbs-value').textContent;
+            const fat = document.getElementById('fat-value').textContent;
+            const proteinBarWidth = document.getElementById('protein-bar').style.width;
+            const carbsBarWidth = document.getElementById('carbs-bar').style.width;
+            const fatBarWidth = document.getElementById('fat-bar').style.width;
+
+            // Get health tips
+            const healthTips = document.getElementById('health-tips').innerHTML;
+
+            // Populate the print template
+            document.getElementById('print-date').textContent = new Date().toLocaleDateString();
+            document.getElementById('print-height').textContent = height + ' cm';
+            document.getElementById('print-weight').textContent = weight + ' kg';
+            document.getElementById('print-age').textContent = age + ' years';
+            document.getElementById('print-gender').textContent = gender;
+            document.getElementById('print-bmi').textContent = bmi;
+            document.getElementById('print-bmi-category').textContent = bmiCategory;
+            document.getElementById('print-weight-range').textContent = idealWeightMin + 'kg - ' + idealWeightMax + 'kg';
+            document.getElementById('print-calories').textContent = calories + ' kcal';
+            document.getElementById('print-water').textContent = water + ' liters';
+            document.getElementById('print-protein').textContent = protein + 'g';
+            document.getElementById('print-carbs').textContent = carbs + 'g';
+            document.getElementById('print-fat').textContent = fat + 'g';
+            document.getElementById('print-protein-bar').style.width = proteinBarWidth;
+            document.getElementById('print-carbs-bar').style.width = carbsBarWidth;
+            document.getElementById('print-fat-bar').style.width = fatBarWidth;
+            document.getElementById('print-recommendations').innerHTML = healthTips;
+
+            // Show the print container and hide the main content
+            document.getElementById('print-results').style.display = 'block';
+            document.querySelector('.main-container').style.display = 'none';
+
+            // Wait a moment for the DOM to update, then print
+            setTimeout(function () {
+                window.print();
+
+                // After printing, show the main content again and hide the print container
+                setTimeout(function () {
+                    document.getElementById('print-results').style.display = 'none';
+                    document.querySelector('.main-container').style.display = 'block';
+                }, 100);
+            }, 100);
+        });
+
+        // Helper function to get random tips
+        function getRandomTips(tipsArray, count) {
+            const shuffled = [...tipsArray].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
+        // Helper function to get BMI Category
+        function getBMICategory(bmi) {
+            if (bmi < 18.5) return 'Underweight';
+            if (bmi < 25) return 'Healthy Weight';
+            if (bmi < 30) return 'Overweight';
+            return 'Obesity';
+        }
+
+        // Helper function to get text color based on category
+        function getCategoryColor(category) {
+            if (body.classList.contains('dark-mode')) {
+                const colors = {
+                    'Underweight': 'text-blue-300',
+                    'Healthy Weight': 'text-green-300',
+                    'Overweight': 'text-yellow-300',
+                    'Obesity': 'text-red-300'
+                };
+                return colors[category] || 'text-gray-300';
+            } else {
+                const colors = {
+                    'Underweight': 'text-blue-600',
+                    'Healthy Weight': 'text-green-600',
+                    'Overweight': 'text-yellow-600',
+                    'Obesity': 'text-red-600'
+                };
+                return colors[category] || 'text-gray-600';
+            }
+        }
+
+        // Helper function to get background color based on category
+        function getCategoryBGColor(category) {
+            if (body.classList.contains('dark-mode')) {
+                const colors = {
+                    'Underweight': 'bg-blue-500',
+                    'Healthy Weight': 'bg-green-500',
+                    'Overweight': 'bg-yellow-500',
+                    'Obesity': 'bg-red-500'
+                };
+                return colors[category] || 'bg-gray-500';
+            } else {
+                const colors = {
+                    'Underweight': 'bg-blue-500',
+                    'Healthy Weight': 'bg-green-500',
+                    'Overweight': 'bg-yellow-500',
+                    'Obesity': 'bg-red-500'
+                };
+                return colors[category] || 'bg-gray-500';
+            }
+        }
+    </script>
+
+
+
+
+
+
+    <div id="print-results" class="print-container" style="display: none;">
+        <div class="print-header">
+            <h1>Health Snapshot Report</h1>
+            <p>Generated on <span id="print-date"></span></p>
+        </div>
+
+        <div class="print-section">
+            <h2>Personal Information</h2>
+            <div class="print-grid">
+                <div>
+                    <div class="print-label">Height</div>
+                    <div class="print-value" id="print-height"></div>
+                </div>
+                <div>
+                    <div class="print-label">Weight</div>
+                    <div class="print-value" id="print-weight"></div>
+                </div>
+                <div>
+                    <div class="print-label">Age</div>
+                    <div class="print-value" id="print-age"></div>
+                </div>
+                <div>
+                    <div class="print-label">Gender</div>
+                    <div class="print-value" id="print-gender"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="print-section">
+            <h2>BMI Results</h2>
+            <div class="print-grid">
+                <div>
+                    <div class="print-label">Your BMI</div>
+                    <div class="print-value" id="print-bmi"></div>
+                    <div id="print-bmi-category"></div>
+                </div>
+                <div>
+                    <div class="print-label">Healthy Weight Range</div>
+                    <div class="print-value" id="print-weight-range"></div>
+                </div>
+            </div>
+
+            <div class="bmi-scale-print"></div>
+            <div class="bmi-markers">
+                <span>Underweight (&lt;18.5)</span>
+                <span>Healthy (18.5-24.9)</span>
+                <span>Overweight (25-29.9)</span>
+                <span>Obesity (30+)</span>
+            </div>
+        </div>
+
+        <div class="print-section">
+            <h2>Nutrition Guidelines</h2>
+            <div class="print-grid">
+                <div>
+                    <div class="print-label">Daily Calorie Needs</div>
+                    <div class="print-value" id="print-calories"></div>
+                </div>
+                <div>
+                    <div class="print-label">Water Intake</div>
+                    <div class="print-value" id="print-water"></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="print-label">Macronutrient Distribution</div>
+                <div class="print-grid">
+                    <div>
+                        <div class="print-value" id="print-protein"></div>
+                        <div class="print-label">Protein</div>
+                    </div>
+                    <div>
+                        <div class="print-value" id="print-carbs"></div>
+                        <div class="print-label">Carbs</div>
+                    </div>
+                    <div>
+                        <div class="print-value" id="print-fat"></div>
+                        <div class="print-label">Fat</div>
+                    </div>
+                </div>
+
+                <div class="macro-bars">
+                    <div class="macro-protein" id="print-protein-bar"></div>
+                    <div class="macro-carbs" id="print-carbs-bar"></div>
+                    <div class="macro-fat" id="print-fat-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="print-section">
+            <h2>Health Recommendations</h2>
+            <div class="recommendations" id="print-recommendations"></div>
+        </div>
+
+        <div class="print-footer">
+            <p>This report was generated by Health Snapshot Calculator. For informational purposes only.</p>
+            <p>Consult a healthcare professional for medical advice.</p>
+        </div>
+    </div>
+</body>
+
+</html>
